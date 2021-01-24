@@ -45,8 +45,9 @@ class VMX_vcp(vrnetlab.VM):
                        "type=1,manufacturer=Juniper,product=VM-vcp_vmx2-161-re-0,version=0.1.0"]
         # add metadata image if it exists
         if os.path.exists("/vmx/metadata-usb-re.img"):
-            self.qemu_args.extend(["-usb", "-usbdevice", "disk:format=raw:/vmx/metadata-usb-re.img"])
-
+            self.qemu_args.extend(
+                ["-usb", "-drive", "id=my_usb_disk,media=disk,format=raw,file=/vmx/metadata-usb-re.img,if=none",
+                 "-device", "usb-storage,drive=my_usb_disk"])
 
 
     def start(self):
@@ -176,7 +177,9 @@ class VMX_vfpc(vrnetlab.VM):
         self.qemu_args.extend(["-cpu", "SandyBridge", "-M", "pc", "-smp", "3"])
         # add metadata image if it exists
         if os.path.exists("/vmx/metadata-usb-fpc0.img"):
-            self.qemu_args.extend(["-usb", "-usbdevice", "disk:format=raw:/vmx/metadata-usb-fpc0.img"])
+            self.qemu_args.extend(
+                ["-usb", "-drive", "id=fpc_usb_disk,media=disk,format=raw,file=/vmx/metadata-usb-fpc0.img,if=none",
+                 "-device", "usb-storage,drive=fpc_usb_disk"])
 
 
 
@@ -249,11 +252,11 @@ class VMX(vrnetlab.VR):
 
     def read_version(self):
         for e in os.listdir("/vmx/"):
-            m = re.search("-(([0-9][0-9])\.([0-9])([A-Z])([0-9]+)\.([0-9]+))", e)
+            m = re.search("-(([0-9][0-9])\.([0-9])([A-Z])([0-9]+)(\-[SD][0-9]*)?\.([0-9]+))", e)
             if m:
                 self.vcp_image = e
                 self.version = m.group(1)
-                self.version_info = [int(m.group(2)), int(m.group(3)), m.group(4), int(m.group(5)), int(m.group(6))]
+                self.version_info = [int(m.group(2)), int(m.group(3)), m.group(4), int(m.group(5)), int(m.group(7))]
 
 
 class VMX_installer(VMX):
